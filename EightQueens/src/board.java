@@ -1,12 +1,12 @@
+import java.util.Arrays;
 import java.util.Random;
 
 public class board {
 	
 	boolean DEBUG = false;
 	
-	private int[][] layout;
-	private int[][] targetLayout;
-	private int tH = 0;
+	private int[][] cBoard;
+	private int[][] nBoard;
 	private int h = 0;
 	private int bSize;
 	private int[] qLocs;
@@ -14,137 +14,221 @@ public class board {
 	board(){
 		bSize = 8;
 		Random rand = new Random();
-		layout = new int[bSize][bSize];
-		targetLayout = new int[bSize][bSize];
+		cBoard = new int[bSize][bSize];
+		nBoard = new int[bSize][bSize];
 		setBoard();
 		
 		qLocs = new int[bSize];
 		
-		for(int i = 0; i < qLocs.length; i++){
+		for(int col = 0; col < qLocs.length; col++){
 			int rNum = rand.nextInt(bSize);
-			targetLayout[rNum][i] = 1;
-			layout[rNum][i] = 1;
-			qLocs[i] = rNum;
+			cBoard[rNum][col] = 1;
+			qLocs[col] = rNum;
 		}
 		
-		calcH();
+		h = calcH(true);
 	}
 	
 	board(int n){
 		bSize = n;
 		Random rand = new Random();
-		layout = new int[bSize][bSize];
-		targetLayout = new int[bSize][bSize];
+		cBoard = new int[bSize][bSize];
+		nBoard = new int[bSize][bSize];
 		setBoard();
 		
-		for(int i = 0; i < qLocs.length; i++){
+		for(int col = 0; col < qLocs.length; col++){
 			int rNum = rand.nextInt(bSize);
-			targetLayout[rNum][i] = 1;
-			layout[rNum][i] = 1;
-			qLocs[i] = rNum;
+			cBoard[rNum][col] = 1;
+			qLocs[col] = rNum;
 		}
 		
-		calcH();
+		h = calcH(true);
 	}
 	
 	private void setBoard(){
-		for(int i = 0; i < layout.length; i++){
-			for(int j = 0; j < layout[i].length; j++){
-				layout[i][j] = 0;
-				targetLayout[i][j] = 0;
+		for(int row = 0; row < cBoard.length; row++){
+			for(int col = 0; col < cBoard[row].length; col++){
+				cBoard[row][col] = 0;
 			}
 		}
 	}
 	
-	private int updateBoard(){
-		int lowerH = 0;
-		for(int i = 0; i < qLocs.length; i++){
-			
-			if(movePiece(qLocs[i], i, 1)){
-				qLocs[i] += 1;
-				if(calcNewH() < h){
-					lowerH++;
-					for(int j = 0; j < bSize; j++)
-						for(int k = 0; k < bSize; k++){
-							targetLayout[j][k] = layout[j][k];
-						}
-				}
+	private void update() {
+		for(int row = 0; row < cBoard.length; row++) {
+			for(int col = 0; col < cBoard[row].length; col++){
+				cBoard[row][col] = nBoard[row][col];
 			}
-			
-			movePiece(qLocs[i],i,-1);
-			
-			if(movePiece(qLocs[i], i, -1)){
-				qLocs[i] += -1;
-				if(calcNewH() < h){
-					lowerH++;
-				}
-			}
-			
-			movePiece(qLocs[i],i,1);
 		}
-		
-		return lowerH;
 	}
 	
-	public boolean movePiece(int coords, int col, int deltaY) {		
-		if(coords + deltaY < 0 || coords + deltaY > bSize-1)
-			return false;
+	private void reset() {
+		for(int row = 0; row < nBoard.length; row++) {
+			for(int col = 0; col < nBoard[row].length; col++){
+				nBoard[row][col] = cBoard[row][col];
+			}
+		}
+	}
+	
+	private void restart() {
+		Random rand = new Random();
 		
-		layout[coords + deltaY][col] = 1;
-		layout[coords][col] = 0;
+		setBoard();
 		
-		return true;
+		for(int col = 0; col < qLocs.length; col++){
+			int rNum = rand.nextInt(bSize);
+			cBoard[rNum][col] = 1;
+			qLocs[col] = rNum;
+		}
+		
+		h = calcH(true);
+	}
+	
+	private int moveQueen(int index, int row, boolean direction, boolean save) {
+		if(direction && row+1 < bSize) {
+			nBoard[row][index] = 0;
+			nBoard[row+1][index] = 1;
+		}
+		else if(!direction && row-1 > 0) {
+			nBoard[row][index] = 0;
+			nBoard[row-1][index] = 1;
+		}
+		else return 100;
+		
+		
+		int heuristic = calcH(false);
+		
+		if(save)
+			update();
+		else
+			reset();
+		
+		return heuristic;
 	}
 	
 	public int iterate(){
-		int lowerH = updateBoard();
-		h = 0;
-		calcH();
+		int minH = h;
+		int minIndex = -1;
+		boolean minDir = false;
+		int newH;
+		int lowerH = 0;
+		
+		for(int i = 0; i < qLocs.length; i++) {
+			newH = moveQueen(i,qLocs[i],true,false);
+			if(newH < minH) {
+				minH = newH;
+				minIndex = i;
+				minDir = true;
+				
+			}
+			if(newH < h)
+				lowerH++;
+			
+			newH = moveQueen(i,qLocs[i],false,false);
+			if(newH < minH) {
+				minH = newH;
+				minIndex = i;
+				minDir = false;
+			}
+			if(newH < h)
+				lowerH++;
+		}
+		
+		if(minIndex != -1) {
+			h = moveQueen(minIndex,qLocs[minIndex],minDir,true);
+		}
+		else
+			restart();
 		
 		return lowerH;
 	}
 	
-	private void calcH(){
-		for(int q = 0; q < qLocs.length; q++){
-			for(int q_ = 0; q_ < q; q_++){
-				if(qLocs[q] == qLocs[q_]){
-					h++;
-					break;
+	private int calcH(boolean board){
+		int heuristic = 0;
+		//TODO: WRITE HEURISTIC FUNCTION
+		if(board) {
+			//TODO: USE TARGET BOARD
+			//TODO: FIX DIAGONALS
+			for(int row = 0; row < cBoard.length; row++) {
+				int numQueens = 0;
+				
+				for(int col = 0; col < cBoard.length; col++) {
+					if(cBoard[row][col] == 1)
+						numQueens++;
 				}
 				
+				if(numQueens > 1)
+					heuristic+= numQueens - 1;
 			}
-			for(int x = 0; x < bSize; x++){
-				if(x+qLocs[q] == 1 || -x+qLocs[q] == 1){
-					h++;
-					break;
+			
+			for(int row = 1; row < cBoard.length-1; row++) {
+				int numQueens = 0;
+				
+				for(int col = 0; col < row; col++) {
+					if(cBoard[row-col][col] == 1)
+						numQueens++;
 				}
+				
+				if(numQueens > 1)
+					heuristic+= numQueens - 1;
+				
+			}
+			
+			for(int row = cBoard.length-2; row > 1; row--) {
+				int numQueens = 0;
+				
+				for(int col = row; col < cBoard.length-1; col++) {
+					if(cBoard[row+(cBoard.length-1-col)][col] == 1)
+						numQueens++;
+				}
+				
+				if(numQueens > 1)
+					heuristic+= numQueens - 1;
+				
 			}
 		}
-	}
-	
-	private int calcNewH(){
-		int newH = 0;
-		for(int q = 0; q < qLocs.length; q++){
-			for(int q_ = 0; q_ < q; q_++){
-				if(qLocs[q] == qLocs[q_]){
-					newH++;
-					break;
+		else {
+			//TODO: USE NEXT BOARD
+			//TODO: FIX DIAGONALS
+			for(int row = 0; row < nBoard.length; row++) {
+				int numQueens = 0;
+				
+				for(int col = 0; col < nBoard.length; col++) {
+					if(nBoard[row][col] == 1)
+						numQueens++;
 				}
 				
+				if(numQueens > 1)
+					heuristic+= numQueens - 1;
 			}
-			for(int x = 0; x < bSize; x++){
-				if(x+qLocs[q] == 1 || -x+qLocs[q] == 1){
-					newH++;
-					break;
+			
+			for(int row = 1; row < nBoard.length-1; row++) {
+				int numQueens = 0;
+				
+				for(int col = 0; col < row; col++) {
+					if(nBoard[row-col][col] == 1)
+						numQueens++;
 				}
+				
+				if(numQueens > 1)
+					heuristic+= numQueens - 1;
+				
+			}
+			
+			for(int row = nBoard.length-2; row > 1; row--) {
+				int numQueens = 0;
+				
+				for(int col = row; col < nBoard.length-1; col++) {
+					if(nBoard[row+(cBoard.length-1-col)][col] == 1)
+						numQueens++;
+				}
+				
+				if(numQueens > 1)
+					heuristic+= numQueens - 1;
+				
 			}
 		}
 		
-		return newH;
-	}
-	
-	public int getPiece(int i, int j){
-		return layout[i][j];
+		return heuristic;
 	}
 	
 	public int getH(){
@@ -154,9 +238,9 @@ public class board {
 	public String toString(){
 		String board = "Current State\n";
 		
-		for(int i = 0; i < layout.length; i++){
-			for(int j = 0; j < bSize; j++){
-				board += targetLayout[i][j] + ",";
+		for(int row = 0; row < cBoard.length; row++){
+			for(int col = 0; col < bSize; col++){
+				board += cBoard[row][col] + ",";
 			}
 			board = board.substring(0, board.length()-1);
 			board += "\n";
