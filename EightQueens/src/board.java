@@ -10,6 +10,7 @@ public class board {
 	private int h = 0;
 	private int bSize;
 	private int[] qLocs;
+	private int[] qNext;
 	
 	board(){
 		bSize = 8;
@@ -19,11 +20,13 @@ public class board {
 		setBoard();
 		
 		qLocs = new int[bSize];
+		qNext = new int[bSize];
 		
 		for(int col = 0; col < qLocs.length; col++){
 			int rNum = rand.nextInt(bSize);
 			cBoard[rNum][col] = 1;
 			qLocs[col] = rNum;
+			qNext[col] = rNum;
 		}
 		
 		h = calcH(true);
@@ -36,10 +39,14 @@ public class board {
 		nBoard = new int[bSize][bSize];
 		setBoard();
 		
+		qLocs = new int[bSize];
+		qNext = new int[bSize];
+		
 		for(int col = 0; col < qLocs.length; col++){
 			int rNum = rand.nextInt(bSize);
 			cBoard[rNum][col] = 1;
 			qLocs[col] = rNum;
+			qNext[col] = rNum;
 		}
 		
 		h = calcH(true);
@@ -78,6 +85,7 @@ public class board {
 			int rNum = rand.nextInt(bSize);
 			cBoard[rNum][col] = 1;
 			qLocs[col] = rNum;
+			qNext[col] = rNum;
 		}
 		
 		h = calcH(true);
@@ -87,10 +95,12 @@ public class board {
 		if(direction && row+1 < bSize) {
 			nBoard[row][index] = 0;
 			nBoard[row+1][index] = 1;
+			qNext[index] = row+1;
 		}
 		else if(!direction && row-1 > 0) {
 			nBoard[row][index] = 0;
 			nBoard[row-1][index] = 1;
+			qNext[index] = row-1;
 		}
 		else return 100;
 		
@@ -141,91 +151,66 @@ public class board {
 		
 		return lowerH;
 	}
-	
+	//TODO: FIX DIAGONALS
+	//TODO: Consider implementing queens checker rather than board checker
 	private int calcH(boolean board){
 		int heuristic = 0;
-		//TODO: WRITE HEURISTIC FUNCTION
+		int thisBoard[][] = new int[bSize][bSize];
+		
 		if(board) {
-			//TODO: USE TARGET BOARD
-			//TODO: FIX DIAGONALS
-			for(int row = 0; row < cBoard.length; row++) {
-				int numQueens = 0;
-				
-				for(int col = 0; col < cBoard.length; col++) {
-					if(cBoard[row][col] == 1)
-						numQueens++;
+			for(int row = 0; row < bSize; row++) {
+				for(int col = 0; col < bSize; col++) {
+					thisBoard[row][col] = cBoard[row][col];
 				}
-				
-				if(numQueens > 1)
-					heuristic+= numQueens - 1;
-			}
-			
-			for(int row = 1; row < cBoard.length-1; row++) {
-				int numQueens = 0;
-				
-				for(int col = 0; col < row; col++) {
-					if(cBoard[row-col][col] == 1)
-						numQueens++;
-				}
-				
-				if(numQueens > 1)
-					heuristic+= numQueens - 1;
-				
-			}
-			
-			for(int row = cBoard.length-2; row > 1; row--) {
-				int numQueens = 0;
-				
-				for(int col = row; col < cBoard.length-1; col++) {
-					if(cBoard[row+(cBoard.length-1-col)][col] == 1)
-						numQueens++;
-				}
-				
-				if(numQueens > 1)
-					heuristic+= numQueens - 1;
-				
 			}
 		}
+		
 		else {
-			//TODO: USE NEXT BOARD
-			//TODO: FIX DIAGONALS
-			for(int row = 0; row < nBoard.length; row++) {
-				int numQueens = 0;
-				
-				for(int col = 0; col < nBoard.length; col++) {
-					if(nBoard[row][col] == 1)
-						numQueens++;
+			for(int row = 0; row < bSize; row++) {
+				for(int col = 0; col < bSize; col++) {
+					thisBoard[row][col] = nBoard[row][col];
 				}
-				
-				if(numQueens > 1)
-					heuristic+= numQueens - 1;
+			}
+		}
+		
+		//TODO: USE TARGET BOARD
+		//TODO: FIX DIAGONALS
+		for(int row = 0; row < thisBoard.length; row++) {
+			int numQueens = 0;
+			
+			for(int col = 0; col < thisBoard.length; col++) {
+				if(thisBoard[row][col] == 1)
+					numQueens++;
 			}
 			
-			for(int row = 1; row < nBoard.length-1; row++) {
-				int numQueens = 0;
-				
-				for(int col = 0; col < row; col++) {
-					if(nBoard[row-col][col] == 1)
-						numQueens++;
-				}
-				
-				if(numQueens > 1)
-					heuristic+= numQueens - 1;
-				
+			if(numQueens > 1)
+				heuristic+= numQueens - 1;
+		}
+		
+		for(int row = 1; row < thisBoard.length-1; row++) {
+			int numQueens = 0;
+			
+			for(int col = 0; col < row; col++) {
+				if(thisBoard[row-col][col] == 1)
+					numQueens++;
 			}
 			
-			for(int row = nBoard.length-2; row > 1; row--) {
-				int numQueens = 0;
-				
-				for(int col = row; col < nBoard.length-1; col++) {
-					if(nBoard[row+(cBoard.length-1-col)][col] == 1)
-						numQueens++;
-				}
-				
-				if(numQueens > 1)
-					heuristic+= numQueens - 1;
-				
+			if(numQueens > 1)
+				heuristic+= numQueens - 1;
+			
+		}
+		
+		for(int row = thisBoard.length-2; row > 1; row--) {
+			int numQueens = 0;
+			
+			for(int col = row; col < thisBoard.length-1; col++) {
+				if(thisBoard[row+(thisBoard.length-1-col)][col] == 1)
+					numQueens++;
 			}
+			
+			if(numQueens > 1)
+				heuristic+= numQueens - 1;
+			
 		}
 		
 		return heuristic;
