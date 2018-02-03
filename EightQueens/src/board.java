@@ -146,8 +146,10 @@ public class board {
 		if(minIndex != -1) {
 			h = moveQueen(minIndex,qLocs[minIndex],minDir,true);
 		}
-		else
+		else {
 			restart();
+			return lowerH*-1;
+		}
 		
 		return lowerH;
 	}
@@ -187,25 +189,27 @@ public class board {
 				heuristic+= numQueens - 1;
 		}
 		
-		for(int row = 1; row < thisBoard.length-1; row++) {
+		for(int y = thisBoard.length*-1; y < thisBoard.length; y++) {
 			int numQueens = 0;
 			
-			for(int col = 0; col < row; col++) {
-				if(thisBoard[row-col][col] == 1)
-					numQueens++;
+			for(int x = 0; x < thisBoard.length; x++) {
+				if(x+y < bSize && x+y >= 0)
+					if(thisBoard[x+y][x] == 1)
+						numQueens++;
 			}
 			
 			if(numQueens > 1)
 				heuristic+= numQueens - 1;
 			
 		}
-		
-		for(int row = thisBoard.length-2; row > 1; row--) {
+
+		for(int y = 0; y < thisBoard.length*2; y++) {
 			int numQueens = 0;
 			
-			for(int col = row; col < thisBoard.length-1; col++) {
-				if(thisBoard[row+(thisBoard.length-1-col)][col] == 1)
-					numQueens++;
+			for(int x = 0; x < thisBoard.length; x++) {
+				if(y-x < bSize && y-x >= 0)
+					if(thisBoard[y-x][x] == 1)
+						numQueens++;
 			}
 			
 			if(numQueens > 1)
@@ -225,7 +229,7 @@ public class board {
 		
 		for(int row = 0; row < cBoard.length; row++){
 			for(int col = 0; col < bSize; col++){
-				board += cBoard[row][col] + ",";
+				board += cBoard[row][col] + "|";
 			}
 			board = board.substring(0, board.length()-1);
 			board += "\n";
