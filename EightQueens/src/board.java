@@ -1,57 +1,35 @@
-import java.util.Arrays;
 import java.util.Random;
 
 public class board {
-	
-	boolean DEBUG = false;
 	
 	private int[][] cBoard;
 	private int[][] nBoard;
 	private int h = 0;
 	private int bSize;
 	private int[] qLocs;
-	private int[] qNext;
 	
+	//default constructor for board, sets the board size to 8x8 and initializes all the variables
 	board(){
 		bSize = 8;
-		Random rand = new Random();
 		cBoard = new int[bSize][bSize];
 		nBoard = new int[bSize][bSize];
-		setBoard();
-		
 		qLocs = new int[bSize];
-		qNext = new int[bSize];
 		
-		for(int col = 0; col < qLocs.length; col++){
-			int rNum = rand.nextInt(bSize);
-			cBoard[rNum][col] = 1;
-			qLocs[col] = rNum;
-			qNext[col] = rNum;
-		}
-		
-		h = calcH(true);
+		//initializes the board
+		restart();
 	}
 	
 	board(int n){
 		bSize = n;
-		Random rand = new Random();
 		cBoard = new int[bSize][bSize];
 		nBoard = new int[bSize][bSize];
-		setBoard();
-		
 		qLocs = new int[bSize];
-		qNext = new int[bSize];
-		
-		for(int col = 0; col < qLocs.length; col++){
-			int rNum = rand.nextInt(bSize);
-			cBoard[rNum][col] = 1;
-			qLocs[col] = rNum;
-			qNext[col] = rNum;
-		}
-		
-		h = calcH(true);
+
+		//initializes the board
+		restart();
 	}
-	
+
+	//initializes the entire board to 0s
 	private void setBoard(){
 		for(int row = 0; row < cBoard.length; row++){
 			for(int col = 0; col < cBoard[row].length; col++){
@@ -59,7 +37,8 @@ public class board {
 			}
 		}
 	}
-	
+
+	//updates the current board equal to the test board
 	private void update() {
 		for(int row = 0; row < cBoard.length; row++) {
 			for(int col = 0; col < cBoard[row].length; col++){
@@ -67,7 +46,8 @@ public class board {
 			}
 		}
 	}
-	
+
+	//resets the test state
 	private void reset() {
 		for(int row = 0; row < nBoard.length; row++) {
 			for(int col = 0; col < nBoard[row].length; col++){
@@ -76,6 +56,7 @@ public class board {
 		}
 	}
 	
+	//resets the entire board to a new board and generates the new h
 	private void restart() {
 		Random rand = new Random();
 		
@@ -85,22 +66,20 @@ public class board {
 			int rNum = rand.nextInt(bSize);
 			cBoard[rNum][col] = 1;
 			qLocs[col] = rNum;
-			qNext[col] = rNum;
 		}
 		
 		h = calcH(true);
 	}
 	
+	//function to move the queen in a direction (either up or down) and checks whether the board should be saved or reset
 	private int moveQueen(int index, int row, boolean direction, boolean save) {
 		if(direction && row+1 < bSize) {
 			nBoard[row][index] = 0;
 			nBoard[row+1][index] = 1;
-			qNext[index] = row+1;
 		}
 		else if(!direction && row-1 > 0) {
 			nBoard[row][index] = 0;
 			nBoard[row-1][index] = 1;
-			qNext[index] = row-1;
 		}
 		else return 100;
 		
@@ -115,6 +94,7 @@ public class board {
 		return heuristic;
 	}
 	
+	//function to iterate the board, 
 	public int iterate(){
 		int minH = h;
 		int minIndex = -1;
@@ -146,19 +126,16 @@ public class board {
 		if(minIndex != -1) {
 			h = moveQueen(minIndex,qLocs[minIndex],minDir,true);
 		}
-		else {
+		else
 			restart();
-			return lowerH*-1;
-		}
 		
 		return lowerH;
 	}
-	//TODO: FIX DIAGONALS
-	//TODO: Consider implementing queens checker rather than board checker
+	
 	private int calcH(boolean board){
 		int heuristic = 0;
 		int thisBoard[][] = new int[bSize][bSize];
-		
+		//sets the board equal to either the current board or the test board (whichever is relevant to be checked
 		if(board) {
 			for(int row = 0; row < bSize; row++) {
 				for(int col = 0; col < bSize; col++) {
@@ -174,9 +151,7 @@ public class board {
 				}
 			}
 		}
-		
-		//TODO: USE TARGET BOARD
-		//TODO: FIX DIAGONALS
+		//checks rows
 		for(int row = 0; row < thisBoard.length; row++) {
 			int numQueens = 0;
 			
@@ -188,7 +163,7 @@ public class board {
 			if(numQueens > 1)
 				heuristic+= numQueens - 1;
 		}
-		
+		//checks primary diagonals
 		for(int y = thisBoard.length*-1; y < thisBoard.length; y++) {
 			int numQueens = 0;
 			
@@ -202,7 +177,7 @@ public class board {
 				heuristic+= numQueens - 1;
 			
 		}
-
+		//checks inverse diagonals
 		for(int y = 0; y < thisBoard.length*2; y++) {
 			int numQueens = 0;
 			
@@ -216,7 +191,7 @@ public class board {
 				heuristic+= numQueens - 1;
 			
 		}
-		
+		//returns the heuristic value
 		return heuristic;
 	}
 	
