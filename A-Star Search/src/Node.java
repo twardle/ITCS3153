@@ -25,6 +25,9 @@ public class Node {
 	public void setParent(Node n){
 		parent = n;
 	}
+	public void setType(int t) {
+		type = t;
+	}
 	
 	//accessor methods to get values
 	public int getF(){
