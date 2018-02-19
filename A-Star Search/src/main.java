@@ -3,7 +3,6 @@ import java.util.*;
 public class main {
 
 	public static void main(String[] args) {
-		List<Node> path = new ArrayList<Node>(); //TODO: DRAW PATH
 		List<Node> openSet = new ArrayList<Node>();
 		List<Node> closedSet = new ArrayList<Node>();
 		Scanner in = new Scanner(System.in);
@@ -35,7 +34,7 @@ public class main {
 		openSet.add(start);
 		
 		while(iterator == 0) {
-			System.out.println(b.toString() + "------------------------");
+			System.out.println(b.toString() + "------------------------------");
 			iterator = b.iterate(openSet, closedSet, end);
 		}
 		if(iterator == -1)
@@ -50,7 +49,7 @@ public class main {
 			}
 			System.out.println( b.toString() );
 		}
-
+		in.close();
 	}
 
 }

@@ -1,6 +1,5 @@
 import java.util.List;
 import java.util.Random;
-import java.math.*;
 
 public class board {
 
