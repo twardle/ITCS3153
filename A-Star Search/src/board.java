@@ -44,10 +44,11 @@ public class board {
 		
 		int winner = 0;
 		
-	    for (int i = 0; i < openSet.size(); i++)
+	    for (int i = 0; i < openSet.size(); i++){
 		    if (openSet.get(i).getF() < openSet.get(winner).getF()) {
 		        winner = i;
 		    }
+	    }
 	    
 	    Node current = openSet.get(winner);
 	    
@@ -116,14 +117,16 @@ public class board {
 		
 		for(int i = 0; i < bSize; i++) {
 			for(int j = 0; j < bSize; j++) {
-				if(b[i][j].getType() == 0)
-					boardState += " ";
-				else if (b[i][j].getType() == 3)
-					boardState += "x";
-				else if (b[i][j].getType() == 2)
-					boardState += "o";
-				else
-					boardState += "+";
+				if(b[i][j].getType() == 0) //space
+					boardState += "  ";
+				else if (b[i][j].getType() == 3) //closedset
+					boardState += "+ ";
+				else if (b[i][j].getType() == 2) //openset
+					boardState += "o ";
+				else if (b[i][j].getType() == 5) //part of path
+					boardState += "% ";
+				else //wall
+					boardState += "x ";
 			}
 			boardState += "\n";
 		}
