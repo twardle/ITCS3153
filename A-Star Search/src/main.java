@@ -29,7 +29,9 @@ public class main {
 			endY = in.nextInt();
 		}
 		Node start = b.b[startX][startY];
+		start.setType(0);
 		Node end = b.b[endX][endY];
+		end.setType(0);
 		
 		openSet.add(start);
 		

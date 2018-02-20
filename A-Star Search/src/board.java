@@ -2,10 +2,11 @@ import java.util.List;
 import java.util.Random;
 
 public class board {
+	boolean DEBUG_DIAGONALS = true;
+	double Opacity = 0.9;
 
 	Node b[][];
 	int bSize;
-	double Opacity = 0.9;
 	
 	public board() {
 		bSize = 15;
@@ -63,6 +64,13 @@ public class board {
 	    checkNeighbors(-1, 0, current, closedSet, openSet, end);
 	    checkNeighbors(0, 1, current, closedSet, openSet, end);
 	    checkNeighbors(0, -1, current, closedSet, openSet, end);
+	    
+	    if(DEBUG_DIAGONALS) {
+		    checkNeighbors(1, 1, current, closedSet, openSet, end);
+		    checkNeighbors(-1, -1, current, closedSet, openSet, end);
+		    checkNeighbors(-1, 1, current, closedSet, openSet, end);
+		    checkNeighbors(1, -1, current, closedSet, openSet, end);
+	    }
 	    
 		if(openSet.size() == 0)
 			return -1;
