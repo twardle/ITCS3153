@@ -2,7 +2,7 @@ import java.util.List;
 import java.util.Random;
 
 public class board {
-	boolean DEBUG_DIAGONALS = true;
+	boolean DEBUG_DIAGONALS = false;
 	double Opacity = 0.9;
 
 	Node b[][];
